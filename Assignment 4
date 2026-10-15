@@ -1,0 +1,114 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+#define INF 9999
+
+int main() {
+    int n;
+
+    cout << "Enter number of routers: ";
+    cin >> n;
+
+    vector<vector<int>> cost(n, vector<int>(n));
+    vector<vector<int>> dist(n, vector<int>(n));
+    vector<vector<int>> nextHop(n, vector<int>(n, -1));
+
+    cout << "\nEnter the cost matrix:\n";
+    cout << "(Enter 9999 for no direct connection)\n";
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> cost[i][j];
+
+            dist[i][j] = cost[i][j];
+
+            if (i == j) {
+                dist[i][j] = 0;
+            }
+            else if (cost[i][j] != INF) {
+                nextHop[i][j] = j;
+            }
+        }
+    }
+
+    // Distance Vector updates
+    bool updated;
+
+    do {
+        updated = false;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
+
+                    if (cost[i][k] != INF &&
+                        dist[k][j] != INF) {
+
+                        int newCost = cost[i][k] + dist[k][j];
+
+                        if (newCost < dist[i][j]) {
+                            dist[i][j] = newCost;
+                            nextHop[i][j] = k;
+                            updated = true;
+                        }
+                    }
+                }
+            }
+        }
+
+    } while (updated);
+
+    // Display final routing tables
+    cout << "\n========== FINAL ROUTING TABLES ==========\n";
+
+    for (int i = 0; i < n; i++) {
+
+        cout << "\nRouter " << char('A' + i) << ":\n";
+
+        cout << "Destination\tCost\tNext Hop\n";
+
+        for (int j = 0; j < n; j++) {
+
+            cout << char('A' + j) << "\t\t"
+                 << dist[i][j] << "\t";
+
+            if (nextHop[i][j] == -1)
+                cout << "-";
+            else
+                cout << char('A' + nextHop[i][j]);
+
+            cout << "\n";
+        }
+    }
+
+    // Find shortest path between source and destination
+    int source, destination;
+
+    cout << "\nEnter source router (0 to "
+         << n - 1 << "): ";
+    cin >> source;
+
+    cout << "Enter destination router (0 to "
+         << n - 1 << "): ";
+    cin >> destination;
+
+    cout << "\nMinimum cost from "
+         << char('A' + source)
+         << " to "
+         << char('A' + destination)
+         << " = "
+         << dist[source][destination]
+         << "\n";
+
+    cout << "Next hop = ";
+
+    if (nextHop[source][destination] != -1)
+        cout << char('A' + nextHop[source][destination]);
+    else
+        cout << "-";
+
+    cout << endl;
+
+    return 0;
+}
